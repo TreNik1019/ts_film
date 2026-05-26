@@ -18,6 +18,6 @@
 SET search_path TO film;
 
 -- https://www.postgresql.org/docs/current/sql-copy.html
-COPY film FROM '/csv/film.csv' (FORMAT csv, DELIMITER ';', HEADER true);
+COPY film FROM '/init/film/csv/film.csv' (FORMAT csv, DELIMITER ';', HEADER true);
 COPY regisseur FROM '/init/film/csv/regisseur.csv' (FORMAT csv, DELIMITER ';', HEADER true);
-COPY cover FROM '/csv/cover.csv' (FORMAT csv, DELIMITER ';', HEADER true);
+COPY cover FROM '/init/film/csv/cover.csv' (FORMAT csv, DELIMITER ';', HEADER true);
