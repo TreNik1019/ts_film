@@ -3,7 +3,10 @@ import { type Prisma } from '../../generated/prisma/client.ts';
 import { type FilmInclude } from '../../generated/prisma/models/Film.ts';
 import { getLogger } from '../../logger/logger.mts';
 import { NotFoundError } from './errors.mts';
-import { Pageable } from './pageable.mts';
+import { type Pageable } from './pageable.mts';
+import { type Slice } from './slice.mts';
+import { type Suchparameter, suchparameterNamen } from './suchparameter.mts';
+import { buildWhere } from './where-builder.mts';
 
 type FindByIdParams = {
     readonly id: number;
@@ -57,7 +60,8 @@ export class FilmService {
     }
 
     async find(
-        suchparameter: Suchparameter | undefined
+        suchparameter: Suchparameter | undefined,
+        pageable: Pageable,
     ): Promise<Readonly<Slice<Readonly<FilmMitRegisseur>>>> {
         this.#logger.debug(
             'find: suchparameter=%s, pageable=%o',
@@ -96,7 +100,7 @@ export class FilmService {
         return this.#createSlice(filme, totalElements);
     }
 
-    async count(where: Prisma.FilmWhereInput) {
+    async count(where?: Prisma.FilmWhereInput) {
         this.#logger.debug('count: where=%o', where ?? 'undefined');
         const { count } = prismaClient.film;
         const anzahl =
@@ -122,7 +126,7 @@ export class FilmService {
 
     #createSlice(
         filme: FilmMitRegisseur[],
-        totalElements: number.
+        totalElements: number,
     ): Readonly<Slice<FilmMitRegisseur>> {
         filme.forEach((film) => {
             film.schlagwoerter ??= []
@@ -158,10 +162,10 @@ export class FilmService {
         return validKeys;
     }
 
-    #checkEnums(suchparameter: Suchparameter) {
+    #validateEnums(suchparameter: Suchparameter) {
         const { genre, art } = suchparameter;
         this.#logger.debug(
-            '#checkEnums: Suchparameter "genre=%s", "art=%s"',
+            '#validateEnums: Suchparameter "genre=%s", "art=%s"',
             genre ?? 'undefined',
             art ?? 'undefined',
         );
@@ -178,7 +182,6 @@ export class FilmService {
 
         const validGenre = genre === undefined || Genres.includes(genre);
         const validArten = art === undefined || Arten.includes(art);
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return validGenre && validArten;
     }
 }
