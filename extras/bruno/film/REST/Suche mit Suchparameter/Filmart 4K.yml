@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{restUrl}}?art=4K"
+  url: "{{restUrl}}?art=K"
   headers:
     - name: Cache-Control
       value: no-cache
@@ -26,7 +26,7 @@ http:
       disabled: true
   params:
     - name: art
-      value: 4K
+      value: K
       type: query
   auth: inherit
 
@@ -39,7 +39,7 @@ runtime:
             .content
             .forEach(film => {
                 const { art, id } = film;
-                expect(art).to.be.equal('4K');
+                expect(art).to.be.equal('K');
                 expect(id).to.be.above(0);
             });
         });

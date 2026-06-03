@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: buch
+  name: film
 config:
   proxy:
     inherit: true
@@ -15,13 +15,31 @@ config:
       bypassProxy: ""
 
 request:
+  auth:
+    type: oauth2
+    flow: resource_owner_password_credentials
+    accessTokenUrl: "{{oidcTokenUrl}}"
+    credentials:
+      clientId: "{{clientId}}"
+      clientSecret: "{{clientSecret}}"
+      placement: body
+    resourceOwner:
+      username: "{{username}}"
+      password: "{{password}}"
+    tokenConfig:
+      id: credentials
+      placement:
+        header: Bearer
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: false
   variables:
     - name: baseUrl
       value: https://localhost:3000
     - name: keycloakUrl
       value: https://localhost:8843
     - name: realm
-      value: javascript
+      value: swe_javascript
     - name: realmUrl
       value: "{{keycloakUrl}}/realms/{{realm}}"
     - name: oidcUrl

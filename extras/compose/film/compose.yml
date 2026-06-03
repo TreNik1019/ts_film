@@ -37,6 +37,7 @@
 # Der "service" fuer das DB-System muss fuer "depends_on" bekannt sein
 include:
   - path: ../postgres/compose.yml
+  - path: ../keycloak/compose.yml
 
 services:
   film:
