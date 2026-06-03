@@ -1,0 +1,67 @@
+info:
+  name: Film 3 mit ungültigen Daten ändern
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: "{{restUrl}}/:id"
+  headers:
+    - name: If-Match
+      value: '"0"'
+  params:
+    - name: id
+      value: "3"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "titel": "",
+        "art": "4K",
+        "erscheinungsdatum": "12345-123-123",
+        "genre": "Action",
+        "rating": -1,
+        "verfuegbar": true,
+        "preis": -1,
+        "schlagwoerter": ["UNSICHTBAR"]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test('Fehlermeldungen im Response Body', () => {
+          const props = ['titel', 'rating', 'art', 'preis', 'verfuegbar', 'erscheinungsdatum', 'schlagwoerter', 'genre'];
+          const { detail } = res.getBody();
+          expect(detail).to.be.an('array').that.has.a.lengthOf(props.length);
+          const paths = detail.map(det => det.path);
+          paths.forEach(path => {
+            expect(path).to.be.an('array').that.is.not.empty;
+            expect(path[0]).to.be.a('string').that.includes.oneOf(props);
+          });
+        });
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "422"
+    - expression: res.headers['content-type']
+      operator: eq
+      value: application/problem+json
+    - expression: res.body.statusCode
+      operator: eq
+      value: "422"
+    - expression: res.body.title
+      operator: eq
+      value: Unprocessable Content
+    - expression: res.body.detail
+      operator: isArray
+    - expression: res.body.detail
+      operator: isNotEmpty
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
