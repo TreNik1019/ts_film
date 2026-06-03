@@ -90,6 +90,26 @@ export class FilmWriteService {
         return filmUpdated?.id ?? Number.NaN;
     }
 
+    async delete(id: number) {
+        this.#logger.debug('delete: id=%d', id);
+
+        const film = await prismaClient.film.findUnique({
+            where: { id },
+        });
+        if (film === null) {
+            this.#logger.warn('delete: no film found with id %d', id);
+            return false;
+        }
+
+        await prismaClient.$transaction(async (tx) => {
+            await tx.film.delete({
+                where: { id },
+            });
+        });
+        this.#logger.debug('delete: film with id %d deleted', id);
+        return true;
+    }
+
     async #sendmail({ id, name }: { id: number | 'N/A'; name: string }) {
         const subject = `Neuer Film mit ID ${id}`;
         const body = `Ein neuer Film von dem Regisseur <strong>${name}</strong> wurde angelegt.`;
