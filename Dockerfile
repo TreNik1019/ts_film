@@ -58,11 +58,11 @@ COPY --chown=nonroot:nonroot src ./src
 # https://specs.opencontainers.org/image-spec/annotations
 # https://spdx.org/licenses
 # MAINTAINER ist deprecated https://docs.docker.com/engine/reference/builder/#maintainer-deprecated
-LABEL org.opencontainers.image.title="buch" \
-  org.opencontainers.image.description="Appserver buch mit 'hardened' Basis-Image Bun und Debian 13" \
-  org.opencontainers.image.version="2026.4.1-trixie" \
+LABEL org.opencontainers.image.title="film" \
+  org.opencontainers.image.description="Appserver film mit 'hardened' Basis-Image Bun und Debian 13" \
+  org.opencontainers.image.version="2026.5.24-trixie" \
   org.opencontainers.image.licenses="GPL-3.0-or-later" \
-  org.opencontainers.image.authors="Juergen.Zimmermann@h-ka.de"
+  org.opencontainers.image.authors="trni1019@h-ka.de"
 
 EXPOSE 3000
 EXPOSE 3030
