@@ -5,8 +5,7 @@ import { KeycloakService } from './security/keycloak-service.mts';
 // TODO: Security und Schreiben von Daten zufügen
 const filmService = new FilmService();
 export const container = {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    keycloakService: new KeycloakService(),
     filmService,
+    keycloakService: new KeycloakService(),
     dbPopulateService: new DbPopulateService(),
 };

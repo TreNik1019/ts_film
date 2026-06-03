@@ -4,20 +4,27 @@ import { cors } from 'hono/cors';
 import { showRoutes } from 'hono/dev';
 import { createMiddleware } from 'hono/factory';
 import { secureHeaders } from 'hono/secure-headers';
+import { type ZodError } from 'zod';
 import { router as healthRouter } from './admin/health-router.mts';
 import { corsOptions } from './config/cors.mts';
 import { router as devRouter } from './config/dev/dev-router.mts';
 import { env } from './config/env.mts';
 import { paths } from './config/paths.mts';
 import { filmRouter } from './film/router/film-router.mts';
-import { NotFoundError } from './film/service/errors.mts';
+import {
+    NotFoundError,
+    VersionInvalidError,
+    VersionOutdatedError,
+} from './film/service/errors.mts';
 import { getLogger } from './logger/logger.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
 import {
     createProblemDetails,
     forbidden,
+    preconditionFailed,
     unauthorized,
+    unprocessableContent,
 } from './problem-details.mts';
 import { router as authRouter } from './security/auth-router.mts';
 import { ForbiddenError, UnauthorizedError } from './security/errors.mts';
@@ -65,7 +72,23 @@ if (logger.isLevelEnabled('debug')) {
 // -----------------------------------------------------------------------------
 app.onError((error, c) => {
     if (error instanceof NotFoundError) {
+        // https://hono.dev/docs/api/context#notfound
         return c.notFound();
+    }
+
+    if (error.name === 'ZodError') {
+        return createProblemDetails(
+            c,
+            unprocessableContent,
+            (error as ZodError).issues,
+        );
+    }
+
+    if (
+        error instanceof VersionInvalidError ||
+        error instanceof VersionOutdatedError
+    ) {
+        return createProblemDetails(c, preconditionFailed, error.message);
     }
 
     if (error instanceof UnauthorizedError) {
