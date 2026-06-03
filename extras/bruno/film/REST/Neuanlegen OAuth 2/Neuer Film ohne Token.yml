@@ -1,0 +1,48 @@
+info:
+  name: Neues Buch ohne Token
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{restUrl}}"
+  headers:
+    - name: ""
+      value: ""
+      disabled: true
+  body:
+    type: json
+    data: |-
+      {
+        "titel": "Der neue Film",
+        "art": "4K",
+        "erscheinungsdatum": "2025-02-28",
+        "genre": "Action",
+        "rating": 7.5,
+        "verfuegbar": true,
+        "preis": 19.99,
+        "schlagwoerter": ["SPANNEND"],
+        "regisseur": {
+          "name": "Max Mustermann",
+          "geburtsjahr": 1980
+        },
+        "cover": [{
+          "info": "Cover 1",
+          "contentType": "img/png"
+        }]
+      }
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "401"
+    - expression: res.headers['content-type']
+      operator: eq
+      value: application/problem+json
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
