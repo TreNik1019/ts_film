@@ -60,6 +60,7 @@
     "@prisma/adapter-pg": "7.8.0",
     "@prisma/client": "7.8.0",
     "@prisma/sqlcommenter-query-insights": "7.8.0",
+    "bignumber.js": "11.1.1",
     "dotenv": "17.4.2",
     "figlet": "1.11.0",
     "graphql": "16.13.2",

@@ -15,7 +15,7 @@
 
 # Aufruf:   docker compose up
 #
-#           docker run --rm -it -v swe_kc_data:/opt/keycloak/data:ro oscarfonts/h2:2.3.232 bash
+#           docker run --rm -it -v kc_data:/opt/keycloak/data:ro oscarfonts/h2:2.3.232 bash
 #               java -cp /opt/h2/bin/h2*.jar org.h2.tools.Shell \
 #                 -url jdbc:h2:file:/opt/keycloak/data/h2/keycloakdb -user "" -password ""
 #                     SHOW TABLES;
@@ -50,8 +50,8 @@ services:
       - published: 9990
         target: 9000
     volumes:
-      - swe_kc_data:/opt/keycloak/data
-      - swe_kc_tls:/opt/keycloak/tls:ro
+      - kc_data:/opt/keycloak/data
+      - kc_tls:/opt/keycloak/tls:ro
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: tmp
       KC_BOOTSTRAP_ADMIN_PASSWORD: p
@@ -104,11 +104,11 @@ services:
           memory: 2G
 
 volumes:
-  swe_kc_data:
-    name: swe_kc_data
+  kc_data:
+    name: kc_data
     external: true
-  swe_kc_tls:
-    name: swe_kc_tls
+  kc_tls:
+    name: kc_tls
     external: true
 
 networks:

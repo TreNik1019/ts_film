@@ -4,7 +4,7 @@ import { type Filmart, type Genres } from '../../generated/prisma/enums.js';
 export type Suchparameter = {
     readonly titel?: string;
     readonly art?: Filmart;
-    readonly erscheinungsDatum?: string;
+    readonly erscheinungsdatum?: string;
     readonly genre?: Genres;
     readonly rating?: number;
     readonly verfuegbar?: boolean;
@@ -22,7 +22,7 @@ export type Suchparameter = {
 export const suchparameterNamen = [
     'titel',
     'art',
-    'erscheinungsDatum',
+    'erscheinungsdatum',
     'genre',
     'rating',
     'verfuegbar',

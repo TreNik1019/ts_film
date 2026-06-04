@@ -36,9 +36,32 @@ export const router = new Hono();
 
 const logger = getLogger('film-write-router', 'file');
 
+const filmartMap = {
+    DVD: Filmart.DVD,
+    BlueRay: Filmart.BlueRay,
+    '4K': Filmart.K,
+} as const;
+
 // -----------------------------------------------------------------------------
 // N e u e n  F i l m  a n l e g e n
 // -----------------------------------------------------------------------------
+
+router.post('/', rolesRequired('admin', 'user'), async (c) => {
+    const requestBody = await c.req.json();
+
+    // Validierung mit Zod: ZodError wird geworfen, falls Validierung nicht erfolgreich
+    const filmDTO: FilmNeuType = FilmNeuSchema.parse(requestBody);
+    logger.debug('post: filmDTO=%o', filmDTO);
+
+    const film = filmDtoToFilmCreateInput(filmDTO);
+    const id = await filmWriteService.create(film);
+
+    const location = `${createBaseUrl(c.req)}/${id}`;
+    const { header, body } = c;
+    header('Location', location);
+    return body(null, 201);
+});
+
 const filmDtoToFilmCreateInput = (filmDTO: FilmNeuType): FilmCreate => {
     const cover = filmDTO.cover?.map((coverDTO) => {
         const abbildung = {
@@ -47,11 +70,6 @@ const filmDtoToFilmCreateInput = (filmDTO: FilmNeuType): FilmCreate => {
         };
         return abbildung;
     });
-    const filmartMap = {
-        DVD: Filmart.DVD,
-        BlueRay: Filmart.BlueRay,
-        '4K': Filmart.K,
-    } as const;
 
     const film: FilmCreate = {
         version: 0,
@@ -77,48 +95,9 @@ const filmDtoToFilmCreateInput = (filmDTO: FilmNeuType): FilmCreate => {
     return film;
 };
 
-router.post('/', rolesRequired('admin', 'user'), async (c) => {
-    const requestBody = await c.req.json();
-
-    // Validierung mit Zod: ZodError wird geworfen, falls Validierung nicht erfolgreich
-    const filmDTO: FilmNeuType = FilmNeuSchema.parse(requestBody);
-    logger.debug('post: filmDTO=%o', filmDTO);
-
-    const film = filmDtoToFilmCreateInput(filmDTO);
-    const id = await filmWriteService.create(film);
-
-    const location = `${createBaseUrl(c.req)}/${id}`;
-    const { header, body } = c;
-    header('Location', location);
-    return body(null, 201);
-});
-
 // -----------------------------------------------------------------------------
 // F i l m   a k t u a l i s i e r e n
 // -----------------------------------------------------------------------------
-const filmartMap = {
-    DVD: Filmart.DVD,
-    BlueRay: Filmart.BlueRay,
-    '4K': Filmart.K,
-} as const;
-
-const filmDtoToFilmUpdate = (filmDTO: FilmUpdateType): FilmUpdate => {
-    return {
-        version: 0,
-        titel: filmDTO.titel,
-        art:
-            filmDTO.art === undefined
-                ? null
-                : filmartMap[filmDTO.art as keyof typeof filmartMap],
-        erscheinungsdatum: filmDTO.erscheinungsdatum,
-        genre: filmDTO.genre,
-        rating: filmDTO.rating,
-        verfuegbar: filmDTO.verfuegbar ?? false,
-        preis: filmDTO.preis,
-        schlagwoerter: filmDTO.schlagwoerter ?? [],
-    };
-};
-
 router.put('/:id', rolesRequired('admin', 'user'), async (c) => {
     const { req } = c;
     const id = req.param('id') ?? '-1';
@@ -160,6 +139,23 @@ router.put('/:id', rolesRequired('admin', 'user'), async (c) => {
     };
     return c.body(null, 204, headers);
 });
+
+const filmDtoToFilmUpdate = (filmDTO: FilmUpdateType): FilmUpdate => {
+    return {
+        version: 0,
+        titel: filmDTO.titel,
+        art:
+            filmDTO.art === undefined
+                ? null
+                : filmartMap[filmDTO.art as keyof typeof filmartMap],
+        erscheinungsdatum: filmDTO.erscheinungsdatum,
+        genre: filmDTO.genre,
+        rating: filmDTO.rating,
+        verfuegbar: filmDTO.verfuegbar ?? false,
+        preis: filmDTO.preis,
+        schlagwoerter: filmDTO.schlagwoerter ?? [],
+    };
+};
 
 // -----------------------------------------------------------------------------
 // F i l m L o e s c h e n

@@ -86,3 +86,14 @@ coverage
 /generated/prisma
 
 /src/generated/prisma
+bun.lock
+extras/bruno/ReadMe.md
+VORGEHENSWEISE.md
+ReadMe.vscode.md
+ReadMe.prisma.md
+extras/compose/keycloak/ReadMe.md
+src/beispiele-write.mts
+src/beispiele.mts
+src/config
+extras/compose/keycloak/ReadMe.md
+extras/compose/postgres/init/tls/server.crt

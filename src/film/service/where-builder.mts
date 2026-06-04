@@ -11,12 +11,12 @@ const buildSchlagwoerter = ({
     spannend,
     traurig,
 }: {
-        aufregend: string | undefined;
-        gruselig: string | undefined;
-        lustig: string | undefined;
-        romantisch: string | undefined;
-        spannend: string | undefined;
-        traurig: string | undefined;
+    aufregend: string | undefined;
+    gruselig: string | undefined;
+    lustig: string | undefined;
+    romantisch: string | undefined;
+    spannend: string | undefined;
+    traurig: string | undefined;
 }): ReadonlyArray<string> => {
     const schlagwoerter: string[] = [];
     if (aufregend?.toLowerCase() === 'true') {
@@ -43,7 +43,7 @@ const buildSchlagwoerter = ({
 export type BuildIdParams = {
     readonly id: number;
     readonly mitCover?: boolean;
-}
+};
 
 const logger = getLogger('buildWhere', 'function');
 
@@ -57,7 +57,7 @@ export const buildWhere = ({
     ...restProps
 }: Suchparameter) => {
     logger.debug(
-        'buildWhere: aufregend=%s, gruselig=%s, lustig=%s, romantisch=%s, spannend=%s, traurig=%s',
+        'buildWhere: aufregend=%s, gruselig=%s, lustig=%s, romantisch=%s, spannend=%s, traurig=%s, restProps=%o',
         aufregend,
         gruselig,
         lustig,
@@ -85,7 +85,7 @@ export const buildWhere = ({
             case 'art':
                 where.art = { equals: value as Filmart };
                 break;
-            case 'erscheinungsDatum':
+            case 'erscheinungsdatum':
                 where.erscheinungsdatum = {
                     gte: new Date(value as string),
                 };
@@ -129,4 +129,4 @@ export const buildWhere = ({
 
     logger.debug('buildWhere: where=%o', where);
     return where;
-}
+};

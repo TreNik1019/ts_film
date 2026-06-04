@@ -41,7 +41,6 @@ export class FilmWriteService {
         this.#readService = readService;
     }
 
-    // TODO: File
     // TODO: Validierung vor Erstellen
     async create(film: FilmCreate) {
         this.#logger.debug('create: film=%o', film);

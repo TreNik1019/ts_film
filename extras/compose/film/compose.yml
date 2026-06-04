@@ -38,12 +38,17 @@
 include:
   - path: ../postgres/compose.yml
   - path: ../keycloak/compose.yml
+  - path: ../mailpit/compose.yml
 
 services:
   film:
-    image: niklastremmel/film:2025.5.24-hardened
+    image: niklastremmel/film:2026.5.24-hardened
     depends_on:
       db:
+        condition: service_healthy
+      mail:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
 
     ports:
