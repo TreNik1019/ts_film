@@ -1,8 +1,9 @@
 import { prismaClient } from '../../config/prisma-client.mts';
-import { type Prisma } from '../../generated/prisma/client.ts';
+import { FilmFile, type Prisma } from '../../generated/prisma/client.ts';
 import { getLogger } from '../../logger/logger.mts';
 import { sendmail } from '../../mail/sendmail.mts';
 import {
+    BadRequestError,
     NotFoundError,
     VersionInvalidError,
     VersionOutdatedError,
@@ -25,8 +26,12 @@ export type UpdateParams = {
 };
 type FilmUpdated = Prisma.FilmGetPayload<{}>;
 
+type FilmFileCreate = Prisma.FilmFileUncheckedCreateInput;
+export type FilmFileCreated = Prisma.FilmFileGetPayload<{}>;
+
 export class FilmWriteService {
     private static readonly VERSION_PATTERN = /^"\d{1,3}"/u;
+    private static readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
     readonly #readService: FilmService;
 
@@ -129,5 +134,66 @@ export class FilmWriteService {
             this.#logger.warn('validateUpdate: version %d is too old', version);
             throw new VersionOutdatedError(version);
         }
+    }
+
+    async addFile(
+        filmId: number,
+        data: Buffer,
+        name: string,
+        size: number,
+        type: string,
+    ): Promise<Readonly<FilmFile> | undefined> {
+        this.#logger.debug(
+            'addFile: filmId=%d, filename=%s, size=%d',
+            filmId,
+            name,
+            size,
+        );
+
+        if (size > FilmWriteService.MAX_FILE_SIZE) {
+            this.#logger.warn(
+                'Die Dateigröße %d überschreitet die maximal erlaubte Größe von %d Bytes',
+                size,
+                FilmWriteService.MAX_FILE_SIZE,
+            );
+            throw new BadRequestError(
+                `Die Dateigröße überschreitet die maximal erlaubte Größe von ${FilmWriteService.MAX_FILE_SIZE} Bytes.`,
+            );
+        }
+
+        let filmFileCreated: FilmFileCreated | undefined;
+        await prismaClient.$transaction(async (tx) => {
+            const film = await tx.film.findUnique({
+                where: { id: filmId },
+            });
+            if (film === null) {
+                this.#logger.warn('Es gibt keinen Film mit der ID %d', filmId);
+                throw new NotFoundError(
+                    `Es gibt keinen Film mit der ID ${filmId}.`,
+                );
+            }
+
+            await tx.filmFile.deleteMany({ where: { filmId } });
+
+            const filmFile: FilmFileCreate = {
+                filename: name,
+                data: data as Uint8Array<ArrayBuffer>,
+                mimetype: type,
+                filmId,
+            };
+            filmFileCreated = await tx.filmFile.create({
+                data: filmFile,
+            });
+        });
+
+        this.#logger.debug(
+            'addFile: id=%s, filename=%s, size=%s, mimetype=%s',
+            filmFileCreated?.id,
+            filmFileCreated?.filename,
+            filmFileCreated?.data.length,
+            filmFileCreated?.mimetype,
+        );
+
+        return filmFileCreated;
     }
 }

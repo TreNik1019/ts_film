@@ -1,5 +1,5 @@
 import { prismaClient } from '../../config/prisma-client.mts';
-import { type Prisma } from '../../generated/prisma/client.ts';
+import { type FilmFile, type Prisma } from '../../generated/prisma/client.ts';
 import { type FilmInclude } from '../../generated/prisma/models/Film.ts';
 import { getLogger } from '../../logger/logger.mts';
 import { NotFoundError } from './errors.mts';
@@ -11,17 +11,17 @@ import { buildWhere } from './where-builder.mts';
 type FindByIdParams = {
     readonly id: number;
     readonly mitCover?: boolean;
-}
+};
 
 export type FilmMitRegisseur = Prisma.FilmGetPayload<{
-    include: {  regisseur: true };
+    include: { regisseur: true };
 }>;
 
 export type FilmMitRegisseurUndCover = Prisma.FilmGetPayload<{
     include: {
         regisseur: true;
         cover: true;
-    }
+    };
 }>;
 
 export class FilmService {
@@ -43,15 +43,20 @@ export class FilmService {
 
         const include = mitCover
             ? this.#includeRegisseurUndCover
-            : this.#includeRegisseur
+            : this.#includeRegisseur;
         const film: FilmMitRegisseurUndCover | null =
             await prismaClient.film.findUnique({
                 where: { id },
                 include,
-            })
+            });
         if (film === null) {
-            this.#logger.debug('Es gibt keinen Film mit der angegebenen ID %d', id);
-            throw new NotFoundError(`Es gibt keine Filme mit der angegebenen ID ${id}.`)
+            this.#logger.debug(
+                'Es gibt keinen Film mit der angegebenen ID %d',
+                id,
+            );
+            throw new NotFoundError(
+                `Es gibt keine Filme mit der angegebenen ID ${id}.`,
+            );
         }
         film.schlagwoerter ??= [];
 
@@ -93,7 +98,7 @@ export class FilmService {
         if (filme.length === 0) {
             this.#logger.debug('Keine Filme gefunden');
             throw new NotFoundError(
-                `Keine Filme gefunden: ${JSON.stringify(suchparameter)}, Seite ${pageable.number}`
+                `Keine Filme gefunden: ${JSON.stringify(suchparameter)}, Seite ${pageable.number}`,
             );
         }
         const totalElements = await this.count(where);
@@ -109,7 +114,9 @@ export class FilmService {
         return anzahl;
     }
 
-    async #findAll(pageable: Pageable): Promise<Readonly<Slice<FilmMitRegisseur>>> {
+    async #findAll(
+        pageable: Pageable,
+    ): Promise<Readonly<Slice<FilmMitRegisseur>>> {
         const { number, size } = pageable;
         const filme: FilmMitRegisseur[] = await prismaClient.film.findMany({
             skip: number * size,
@@ -118,7 +125,9 @@ export class FilmService {
         });
         if (filme.length === 0) {
             this.#logger.debug('Keine Filme gefunden');
-            throw new NotFoundError(`Keine Filme gefunden, Seite ${pageable.number}`);
+            throw new NotFoundError(
+                `Keine Filme gefunden, Seite ${pageable.number}`,
+            );
         }
         const totalElements = await this.count();
         return this.#createSlice(filme, totalElements);
@@ -129,7 +138,7 @@ export class FilmService {
         totalElements: number,
     ): Readonly<Slice<FilmMitRegisseur>> {
         filme.forEach((film) => {
-            film.schlagwoerter ??= []
+            film.schlagwoerter ??= [];
         });
         const filmSlice: Slice<FilmMitRegisseur> = {
             content: filme,
@@ -183,5 +192,32 @@ export class FilmService {
         const validGenre = genre === undefined || Genres.includes(genre);
         const validArten = art === undefined || Arten.includes(art);
         return validGenre && validArten;
+    }
+
+    async findFileByFilmId(
+        filmId: number,
+    ): Promise<Readonly<FilmFile> | undefined> {
+        this.#logger.debug('findFileByFilmId: filmId=%d', filmId);
+        const filmFile: FilmFile | null =
+            await prismaClient.filmFile.findUnique({
+                where: { filmId },
+            });
+        if (filmFile === null) {
+            this.#logger.debug(
+                'Es gibt keine Filmdatei für den Film mit der ID %d',
+                filmId,
+            );
+            return;
+        }
+
+        this.#logger.debug(
+            'findFileByFilmId: id=%s, filename=%s, size=%d, mimetype=%s',
+            filmFile.id,
+            filmFile.filename,
+            filmFile.data.length,
+            filmFile.mimetype,
+        );
+
+        return filmFile;
     }
 }
