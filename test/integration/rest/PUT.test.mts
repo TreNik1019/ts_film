@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest';
 import { type FilmUpdateType } from '../../../src/film/router/film-validation.mts';
+import { ProblemDetails } from '../../../src/problem-details.mts';
 import {
     APPLICATION_JSON,
     AUTHORIZATION,
@@ -14,28 +15,33 @@ import { getToken } from '../token.mts';
 // -----------------------------------------------------------------------------
 // T e s t d a t e n
 // -----------------------------------------------------------------------------
-const geaenderterFilm: Omit<FilmUpdateType, 'preis'> & {
+const geaenderterFilm: Omit<FilmUpdateType, 'preis' | 'erscheinungsdatum'> & {
     preis: number;
+    erscheinungsdatum: string;
 } = {
     titel: 'Inception',
     art: 'DVD',
-    erscheinungsdatum: new Date('2010-07-16T00:00:00.000Z'),
+    erscheinungsdatum: '2010-07-16T00:00:00Z',
     genre: 'ScienceFiction',
-    rating: 9.3,
+    rating: 4.3,
     verfuegbar: true,
     preis: 14.99,
     schlagwoerter: ['ROMANTISCH'],
 };
 const idVorhanden = '3';
 
-const geaenderterFilmIdNichtVorhanden: Omit<FilmUpdateType, 'preis'> & {
+const geaenderterFilmIdNichtVorhanden: Omit<
+    FilmUpdateType,
+    'preis' | 'erscheinungsdatum'
+> & {
     preis: number;
+    erscheinungsdatum: string;
 } = {
     titel: 'InceptionE',
     art: 'BlueRay',
-    erscheinungsdatum: new Date('2010-07-16T00:00:00.000Z'),
+    erscheinungsdatum: '2010-07-16T00:00:00Z',
     genre: 'ScienceFiction',
-    rating: 9.3,
+    rating: 4.3,
     verfuegbar: true,
     preis: 14.99,
     schlagwoerter: ['ROMANTISCH'],
@@ -43,7 +49,7 @@ const geaenderterFilmIdNichtVorhanden: Omit<FilmUpdateType, 'preis'> & {
 const idNichtVorhanden = '100';
 
 const geaenderterFilmInvalid: Record<string, unknown> = {
-    titel: 'Kein Titel – Die unerwartete Wahrheit hinter dem Verborgenen',
+    titel: '',
     art: 'Schallplatte',
     erscheinungsdatum: 'gestern',
     genre: 'Leere',
@@ -53,12 +59,15 @@ const geaenderterFilmInvalid: Record<string, unknown> = {
     schlagwoerter: ['ACTION'],
 };
 
-const veralteterFilm: FilmUpdateType = {
+const veralteterFilm: Omit<FilmUpdateType, 'preis' | 'erscheinungsdatum'> & {
+    preis: number;
+    erscheinungsdatum: string;
+} = {
     titel: 'InterstellarA',
     art: 'BlueRay',
-    erscheinungsdatum: new Date('2014-11-07T00:00:00.000Z'),
+    erscheinungsdatum: '2014-11-07T00:00:00Z',
     genre: 'ScienceFiction',
-    rating: 8.8,
+    rating: 4.8,
     verfuegbar: true,
     preis: 16.49,
     schlagwoerter: ['AUFREGEND', 'TRAURIG', 'SPANNEND'],
@@ -120,13 +129,13 @@ describe('PUT /rest/:id', () => {
         headers.append(CONTENT_TYPE, APPLICATION_JSON);
         headers.append(IF_MATCH, '"0"');
         headers.append(AUTHORIZATION, `${BEARER} ${token}`);
-        const expectedMsg = [
-            expect.stringMatching(/^titel /u),
-            expect.stringMatching(/^art /u),
-            expect.stringMatching(/^erscheinungsDatum /u),
-            expect.stringMatching(/^genre /u),
-            expect.stringMatching(/^rating /u),
-            expect.stringMatching(/^preis /u),
+        const expectedPaths = [
+            'titel',
+            'art',
+            'erscheinungsdatum',
+            'genre',
+            'rating',
+            'preis',
         ];
 
         // when
@@ -137,14 +146,17 @@ describe('PUT /rest/:id', () => {
         });
 
         // then
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(422);
 
-        const body = (await response.json()) as { message: string[] };
-        const messages = body.message;
+        const body = (await response.json()) as ProblemDetails;
+        const { detail } = body;
 
-        expect(messages).toBeDefined();
-        expect(messages).toHaveLength(expectedMsg.length);
-        expect(messages).toStrictEqual(expect.arrayContaining(expectedMsg));
+        expect(detail).toBeDefined();
+        expect(detail).toHaveLength(expectedPaths.length);
+
+        const paths = detail.map((d: any) => d.path[0]);
+
+        expect(paths).toStrictEqual(expect.arrayContaining(expectedPaths));
     });
 
     test('Vorhandenen Film aendern, aber ohne Versionsnummer', async () => {
@@ -164,9 +176,11 @@ describe('PUT /rest/:id', () => {
         // then
         expect(response.status).toBe(428);
 
-        const body = await response.text();
+        const { detail, statusCode } =
+            (await response.json()) as ProblemDetails;
 
-        expect(body).toBe(`Header "${IF_MATCH}" fehlt`);
+        expect(detail).toContain(IF_MATCH);
+        expect(statusCode).toBe(428);
     });
 
     test('Vorhandenen Film aendern, aber mit alter Versionsnummer', async () => {
@@ -187,12 +201,10 @@ describe('PUT /rest/:id', () => {
         // then
         expect(response.status).toBe(412);
 
-        const { message, statusCode } = (await response.json()) as {
-            message: string;
-            statusCode: number;
-        };
+        const { detail, statusCode } =
+            (await response.json()) as ProblemDetails;
 
-        expect(message).toMatch(/Versionsnummer/u);
+        expect(detail).toMatch(/Versionsnummer/u);
         expect(statusCode).toBe(412);
     });
 

@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, test } from 'vitest';
 import { type FilmNeuType } from '../../../src/film/router/film-validation.mts';
 import { FilmService } from '../../../src/film/service/film-service.mts';
+import { ProblemDetails } from '../../../src/problem-details.mts';
 import {
     APPLICATION_JSON,
     AUTHORIZATION,
@@ -15,14 +16,15 @@ import { getToken } from '../token.mts';
 // -----------------------------------------------------------------------------
 // T e s t d a t e n
 // -----------------------------------------------------------------------------
-const neuerFilm: Omit<FilmNeuType, 'preis'> & {
+const neuerFilm: Omit<FilmNeuType, 'preis' | 'erscheinungsdatum'> & {
     preis: number;
+    erscheinungsdatum: string;
 } = {
     titel: 'The Equalizer',
     art: 'DVD',
     erscheinungsdatum: '2006-10-24',
     genre: 'Action',
-    rating: 10.0,
+    rating: 5.0,
     verfuegbar: true,
     preis: 24.99,
     schlagwoerter: ['SPANNEND', 'TRAURIG', 'GRUSELIG'],
@@ -38,21 +40,19 @@ const neuerFilm: Omit<FilmNeuType, 'preis'> & {
     ],
 };
 const neuerFilmInvalid: Record<string, unknown> = {
-    titel: 'The Equalizer: Auf Messers Schneide zwischen Gerechtigkeit und Vergeltung',
+    titel: '',
     art: 'Unknown',
-    erscheinungsdatum: '2100',
+    erscheinungsdatum: '2000-01-01',
     genre: 'Kindergarten',
     rating: -10.0,
     verfuegbar: true,
     preis: -24.99,
     schlagwoerter: ['SPANNEND', 'TRAURIG', 'GRUSELIG'],
     regisseur: {
-        name: 'Antoine-Feger!',
-        geburtsjahr: 2222,
+        name: 'Antoine-Feger-der-groesste-Regisseur-aller-Zeiten-auf-der-ganzen-Welt!',
+        geburtsjahr: 2004,
     },
 };
-
-type MessageType = { message: string };
 
 // -----------------------------------------------------------------------------
 // T e s t s
@@ -105,14 +105,13 @@ describe('POST /rest', () => {
         headers.append(CONTENT_TYPE, APPLICATION_JSON);
         headers.append(AUTHORIZATION, `${BEARER} ${token}`);
 
-        const expectedMsg = [
-            expect.stringMatching(/^regisseur.name /u),
-            expect.stringMatching(/^regisseur.geburtsjahr /u),
-            expect.stringMatching(/^titel /u),
-            expect.stringMatching(/^art /u),
-            expect.stringMatching(/^genre /u),
-            expect.stringMatching(/^rating /u),
-            expect.stringMatching(/^preis /u),
+        const expectedPaths = [
+            'regisseur',
+            'titel',
+            'art',
+            'genre',
+            'rating',
+            'preis',
         ];
 
         // when
@@ -125,14 +124,17 @@ describe('POST /rest', () => {
         // then
         const { status } = response;
 
-        expect(status).toBe(400);
+        expect(status).toBe(422);
 
-        const body = (await response.json()) as MessageType;
-        const messages = body.message;
+        const body = (await response.json()) as ProblemDetails;
+        const { detail } = body;
 
-        expect(messages).toBeDefined();
-        expect(messages).toHaveLength(expectedMsg.length);
-        expect(messages).toStrictEqual(expect.arrayContaining(expectedMsg));
+        expect(detail).toBeDefined();
+        expect(detail).toHaveLength(expectedPaths.length);
+
+        const paths = detail.map((d: any) => d.path[0]);
+
+        expect(paths).toStrictEqual(expect.arrayContaining(expectedPaths));
     });
 
     test.concurrent('Neuer Film, aber ohne Token', async () => {
