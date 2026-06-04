@@ -8,8 +8,8 @@ import {
     IF_MATCH,
     PUT,
     restURL,
-} from '../constants.mjs';
-import { getToken } from '../token.mjs';
+} from '../constants.mts';
+import { getToken } from '../token.mts';
 
 // -----------------------------------------------------------------------------
 // T e s t d a t e n

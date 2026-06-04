@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from 'vitest';
-import { AUTHORIZATION, BEARER, DELETE, restURL } from '../constants.mjs';
-import { getToken } from '../token.mjs';
+import { AUTHORIZATION, BEARER, DELETE, restURL } from '../constants.mts';
+import { getToken } from '../token.mts';
 
 // -----------------------------------------------------------------------------
 // T e s t d a t e n

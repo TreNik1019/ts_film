@@ -94,6 +94,6 @@ ReadMe.prisma.md
 extras/compose/keycloak/ReadMe.md
 src/beispiele-write.mts
 src/beispiele.mts
-src/config
 extras/compose/keycloak/ReadMe.md
 extras/compose/postgres/init/tls/server.crt
+src/config/resources/postgresql/server.crt

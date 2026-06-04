@@ -1,5 +1,5 @@
-import { AUTHORIZATION, baseURL, BEARER, POST } from './constants.mjs';
-import { getToken } from './token.mjs';
+import { AUTHORIZATION, baseURL, BEARER, POST } from './constants.mts';
+import { getToken } from './token.mts';
 
 const dbPopulate = async (token: string) => {
     const url = `${baseURL}/dev/db_populate`;

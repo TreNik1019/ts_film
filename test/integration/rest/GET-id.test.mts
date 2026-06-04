@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CONTENT_TYPE, IF_NONE_MATCH, restURL } from '../constants.mjs';
+import { CONTENT_TYPE, IF_NONE_MATCH, restURL } from '../constants.mts';
 
 // -----------------------------------------------------------------------------
 // T e s t d a t e n
