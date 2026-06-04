@@ -11,6 +11,7 @@ import { router as devRouter } from './config/dev/dev-router.mts';
 import { env } from './config/env.mts';
 import { paths } from './config/paths.mts';
 import { filmRouter } from './film/router/film-router.mts';
+import { router as filmWriteRouter } from './film/router/film-write-router.mts';
 import {
     NotFoundError,
     VersionInvalidError,
@@ -53,6 +54,7 @@ if (logger.isLevelEnabled('debug')) {
 // R o u t e n
 // -----------------------------------------------------------------------------
 app.route(paths.rest, filmRouter);
+app.route(paths.rest, filmWriteRouter);
 app.route(paths.health, healthRouter);
 app.route(paths.auth, authRouter);
 
