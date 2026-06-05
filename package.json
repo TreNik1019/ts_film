@@ -43,7 +43,7 @@
     "k6": "k6 run test\\lasttest\\script.ts",
     "leasot": "leasot --exit-nicely src/**/*.mts",
     "prettier": "prettier -w  \"src/**/*.mts\" \"test/**/*.mts\" \"package.json\"",
-    "prettier:check": "prettier --cache --check \"src/**/*.mts\" \"test/**/*.ts\" \"package.json\"",
+    "prettier:check": "prettier --cache --check \"src/**/*.mts\" \"test/**/*.mts\" \"package.json\"",
     "sonar": "bun scripts/sonar-scanner.mts",
     "tsc": "tsc --pretty",
     "tsgo": "tsgo --stableTypeOrdering"
