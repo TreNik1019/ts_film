@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v5
+
+      - name: Bun installieren
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Node installieren
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Dependencies installieren
+        run: bun install
+
+      - name: Prisma Client generieren
+        env:
+          DATABASE_URL: postgresql://firma:p@localhost:5432/firma?schema=firma
+        run: bunx prisma generate
+
+      - name: TypeScript prüfen
+        run: bun run tsc
+
+      - name: ESLint prüfen
+        run: bun run eslint
+
+      - name: Prettier prüfen
+        run: bun run prettier:check
+
+      - name: Log Verzeichnis erstellen
+        run: mkdir -p logs
+
+      - name: Vitest
+        run: bun run test -- --run --passWithNoTests --project unit
