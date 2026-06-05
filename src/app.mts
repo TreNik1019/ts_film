@@ -20,6 +20,8 @@ import {
 import { getLogger } from './logger/logger.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
+import { trackMetrics } from './monitoring/prometheus-metrics.mts';
+import { router as prometheusRouter } from './monitoring/prometheus-router.mts';
 import {
     createProblemDetails,
     forbidden,
@@ -46,6 +48,8 @@ const securityHeaders = createMiddleware(async (c: Context, next: Next) => {
 
 app.use(secureHeaders(), cors(corsOptions), securityHeaders, compress());
 
+app.use(trackMetrics);
+
 if (logger.isLevelEnabled('debug')) {
     app.use(responseTime, requestLogger);
 }
@@ -57,6 +61,7 @@ app.route(paths.rest, filmRouter);
 app.route(paths.rest, filmWriteRouter);
 app.route(paths.health, healthRouter);
 app.route(paths.auth, authRouter);
+app.route('/prometheus', prometheusRouter);
 
 const { NODE_ENV } = env;
 if (NODE_ENV === 'development' || NODE_ENV === 'test') {
