@@ -36,9 +36,7 @@
 # https://docs.docker.com/reference/compose-file/include
 # Der "service" fuer das DB-System muss fuer "depends_on" bekannt sein
 include:
-  - path: ../postgres/compose.yml
-  - path: ../keycloak/compose.yml
-  - path: ../mailpit/compose.yml
+  - path: ../backend/compose.yml
 
 services:
   film:
