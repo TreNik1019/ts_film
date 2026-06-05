@@ -43,7 +43,7 @@ export class KeycloakService {
             return;
         }
 
-       const body = `username=${username}&password=${password}&grant_type=password&client_id=${clientId}&client_secret=${secret}`;
+        const body = `username=${username}&password=${password}&grant_type=password&client_id=${clientId}&client_secret=${secret}`;
 
         this.#logger.debug('token: path=%s', accessTokenUrl);
         this.#logger.debug('token: headers=%o', this.#headers);
@@ -72,8 +72,7 @@ export class KeycloakService {
             return;
         }
 
-        const responseBody =
-            (await response.json()) as Record<string, unknown>;
+        const responseBody = (await response.json()) as Record<string, unknown>;
 
         this.#logPayload(responseBody);
         this.#logger.debug('token: responseBody=%o', responseBody);
